@@ -1,11 +1,14 @@
 package ch.privately.posintegration
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import ch.privately.posintegration.databinding.ActivityChooseVerificationBinding
 
 class ChooseVerificationActivity : AppCompatActivity() {
@@ -46,6 +49,10 @@ class ChooseVerificationActivity : AppCompatActivity() {
         
         setupUI()
         setupClickListeners()
+
+        if (!isPermissionGranted(Manifest.permission.CAMERA)) {
+            requestPermissions(arrayOf(Manifest.permission.CAMERA), 101)
+        }
     }
     
     private fun setupUI() {
@@ -82,6 +89,27 @@ class ChooseVerificationActivity : AppCompatActivity() {
         if (hasFocus) {
             // Re-enable full-screen when window regains focus
             enableFullScreen()
+        }
+    }
+
+    private fun isPermissionGranted(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            101 -> if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.e("MMOSAD", "Permission granted")
+            }
+
+            else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
         }
     }
 }
