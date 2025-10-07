@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AgeAI+</string>
+    
+    <!-- Choose Verification Method Screen -->
+    <string name="choose_verification_method">Bitte Ihre bevorzugte Wahl antippen, falls Sie einwilligen wollen:</string>
+    <string name="estimate_age_with_face_scan">Weiter mit Gesichtsscan</string>
+    <string name="verify_age_with_id_scan">Weiter mit Ausweisscan</string>
+    <string name="privacy_disclaimer"></string>
+
+    <!-- Age Verification Success Screen -->
+    <string name="age_verification_successful">Vielen Dank!</string>
+    <string name="continue_button">Continue</string>
+
+    <!-- Age Verification Failure Screen -->
+    <string name="age_verification_unsuccessful">Alterskontrolle nicht erfolgreich\nabgeschlossen.</string>
+    <string name="please_show_id_to_cashier">Bitte halten Sie Ihren Ausweis zur Überprüfung bereit.</string>
+    <string name="try_again">Try Again</string>
+
+    <!-- Document Scanning Screen -->
+    <string name="scanning_document">Scanning Document...</string>
+    <string name="id_placement_message">Platzieren Sie Ihren Ausweis im Rahmen</string>
+    <string name="id_placment_location">Positionieren Sie hier Ihren Ausweis</string>
+    <string name="id_scan_error_title">ID Scan Error</string>
+    <string name="document_not_supported_message">Document not supported</string>
+
+    <!-- Face Scanning Screen -->
+    <string name="scanning_face">Scanning Face...</string>
+    <string name="position_face">Bitte komen Sie näher zur Kamera</string>
+
+    <!-- Privacy Info Screen -->
+    <string name="ai_technology_description">
+</string>
+    <string name="no_data_leaves_device"></string>
+    <string name="get_started">Get Started</string>
+
+    <string name="imprint"></string>
+    <string name="privacy_notice"></string>
+    <string name="imprint_text"></string>
+</resources>
