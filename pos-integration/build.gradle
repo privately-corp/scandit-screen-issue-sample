@@ -1,8 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.gms.google-services'
-    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -66,9 +64,6 @@ dependencies {
     implementation 'com.google.android.material:material:1.6.0'
 
     implementation 'androidx.preference:preference:1.1.1'
-
-    // Firebase
-    implementation 'com.google.firebase:firebase-crashlytics:18.4.3'
 
     // Age estimation integration
     implementation 'com.github.anrwatchdog:anrwatchdog:1.4.0'
