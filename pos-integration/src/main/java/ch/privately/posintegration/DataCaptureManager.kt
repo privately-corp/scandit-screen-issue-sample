@@ -5,6 +5,7 @@ import androidx.annotation.VisibleForTesting
 import com.scandit.datacapture.core.capture.DataCaptureContext
 import com.scandit.datacapture.core.source.Camera
 import com.scandit.datacapture.core.source.CameraPosition
+import com.scandit.datacapture.core.source.FrameSourceListener
 import com.scandit.datacapture.core.source.VideoResolution
 import com.scandit.datacapture.id.capture.DriverLicense
 import com.scandit.datacapture.id.capture.FullDocumentScanner
@@ -21,12 +22,14 @@ import java.util.Arrays
 /*
 * Initializes DataCapture.
 */
-class DataCaptureManager private constructor() {
+class DataCaptureManager private constructor(): FrameSourceListener {
     val dataCaptureContext: DataCaptureContext
     var camera: Camera? = null
         private set
     var idCapture: IdCapture? = null
         private set
+    var lastStartTimestamp = System.currentTimeMillis()
+    var lastFrameTimestamp = 0L
 
     init {
         /*
@@ -53,9 +56,8 @@ class DataCaptureManager private constructor() {
         cameraSettings.zoomFactor = 1.0f
 
         camera = Camera.getCamera(CameraPosition.USER_FACING, cameraSettings)
-
+        camera?.addListener(this)
         checkNotNull(camera) {
-            Log.e("MMOSADDD", "Failed to init camera!!")
             "Failed to init camera!"
         }
 
@@ -98,5 +100,27 @@ class DataCaptureManager private constructor() {
 
                 return INSTANCE
             }
+    }
+
+    override fun onFrameOutput(frameSource: com.scandit.datacapture.core.source.FrameSource, frame: com.scandit.datacapture.core.data.FrameData) {
+        if (lastFrameTimestamp == 0L) {
+            lastFrameTimestamp = System.currentTimeMillis()
+            Log.e("MMOSADDD", "First frame!")
+        }
+    }
+
+    override fun onObservationStarted(frameSource: com.scandit.datacapture.core.source.FrameSource) {
+        lastStartTimestamp = System.currentTimeMillis()
+    }
+
+    override fun onObservationStopped(frameSource: com.scandit.datacapture.core.source.FrameSource) {
+        if (System.currentTimeMillis() - lastStartTimestamp < 2000L) {
+            Log.e("MMOSADDD", "ID scan couldn't start 2")
+        }
+        Log.e("MMOSADDD", "Observation stopped 2")
+    }
+
+    override fun onStateChanged(frameSource: com.scandit.datacapture.core.source.FrameSource, newState: com.scandit.datacapture.core.source.FrameSourceState) {
+        Log.e("MMOSADDD", "State changed, new state 2: " + newState)
     }
 }

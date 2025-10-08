@@ -22,12 +22,17 @@ import com.scandit.datacapture.id.data.DateResult
 import com.scandit.datacapture.id.data.RejectionReason
 import com.scandit.datacapture.id.ui.overlay.IdCaptureOverlay
 import ch.privately.posintegration.views.IdCardOverlayView
+import com.scandit.datacapture.core.data.FrameData
+import com.scandit.datacapture.core.source.FrameSource
+import com.scandit.datacapture.core.source.FrameSourceListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 
-class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
-    AlertDialogFragment.Callbacks {
+class IdCaptureActivity : AppCompatActivity(), IdCaptureListener, FrameSourceListener {
     @VisibleForTesting
     var dataCaptureManager: DataCaptureManager? = null
     private var dataCaptureView: DataCaptureView? = null
@@ -35,6 +40,7 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
     private var idCardOverlay: IdCardOverlayView? = null
     private var verificationStartTimestamp = System.currentTimeMillis()
     private var localisationStartTimestamp = 0L
+    private var lastFrameTimestamp = 0L
     
     // Timeout handling
     private var timeoutMs: Long = 3000L // Default 15 seconds
@@ -59,10 +65,10 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
 
         setContentView(R.layout.activity_id_capture)
 
-        val container: ViewGroup = findViewById(R.id.data_capture_view_container)
 
         dataCaptureManager = DataCaptureManager.instance
 
+        val container: ViewGroup = findViewById(R.id.data_capture_view_container)
         /*
          * Create a new DataCaptureView and fill the screen with it. DataCaptureView will show
          * the camera preview on the screen. Pass your DataCaptureContext to the view’s
@@ -84,7 +90,6 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
         
         // Initialize the ID card positioning overlay
         idCardOverlay = findViewById(R.id.id_card_overlay)
-        verificationStartTimestamp = System.currentTimeMillis()
         
         // Extract timeout from intent
         extractTimeoutFromIntent()
@@ -110,6 +115,7 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
          * Additionally the preview will appear on the screen. The camera is started asynchronously,
          * and you may notice a small delay before the preview appears.
          */
+        dataCaptureManager!!.camera!!.addListener(this)
         dataCaptureManager!!.camera!!.switchToDesiredState(FrameSourceState.ON)
         dataCaptureManager!!.idCapture!!.isEnabled = true
 
@@ -126,6 +132,7 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
         /*
          * Switch the camera off to stop streaming frames. The camera is stopped asynchronously.
          */
+        dataCaptureManager!!.camera!!.removeListener(this)
         dataCaptureManager!!.camera!!.switchToDesiredState(FrameSourceState.OFF)
         dataCaptureManager!!.idCapture!!.removeListener(this)
         dataCaptureView!!.removeOverlay(overlay!!)
@@ -291,13 +298,6 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
         }
     }
 
-    override fun onAlertDismissed() {
-        /*
-         * Enable capture again, after the alert dialog is dismissed.
-         */
-        dataCaptureManager!!.idCapture!!.isEnabled = true
-    }
-
     private fun getDescriptionForCapturedId(result: CapturedId): String {
         val builder = StringBuilder()
         appendField(builder, "Full Name: ", result.fullName)
@@ -376,5 +376,30 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener,
         val RESULT_FRAGMENT_TAG: String = "result_fragment"
 
         private val dateFormat: DateFormat = SimpleDateFormat.getDateInstance()
+    }
+
+    override fun onFrameOutput(frameSource: FrameSource, frame: FrameData) {
+        if (lastFrameTimestamp == 0L) {
+            lastFrameTimestamp = System.currentTimeMillis()
+        }
+    }
+
+    override fun onObservationStarted(frameSource: FrameSource) {
+        verificationStartTimestamp = System.currentTimeMillis()
+    }
+
+    override fun onObservationStopped(frameSource: FrameSource) {
+
+    }
+
+    override fun onStateChanged(frameSource: FrameSource, newState: FrameSourceState) {
+        if (newState == FrameSourceState.ON) {
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                if (System.currentTimeMillis() - lastFrameTimestamp > 1000) {
+                    this.recreate()
+                }
+            }, 500)
+        }
     }
 }
