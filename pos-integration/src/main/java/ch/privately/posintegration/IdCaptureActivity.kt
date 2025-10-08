@@ -47,6 +47,7 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener, FrameSourceLis
     private val handler = Handler(Looper.getMainLooper())
     private var timeoutRunnable: Runnable? = null
     private var isTimeoutTriggered = false
+    private val enableListener = true
 
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +65,6 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener, FrameSourceLis
         enableFullScreen()
 
         setContentView(R.layout.activity_id_capture)
-
 
         dataCaptureManager = DataCaptureManager.instance
 
@@ -99,25 +99,17 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener, FrameSourceLis
 
     override fun onResume() {
         super.onResume()
-
-        /*
-         * Check for camera permission and request it, if it hasn’t yet been granted.
-         * Once we have the permission the onCameraPermissionGranted() method will be called.
-         */
-        dataCaptureManager!!.idCapture!!.addListener(this)
-        /*
-         * Add overlay to data capture view.
-         */
-        // dataCaptureView!!.addOverlay(overlay!!)
-
         /*
          * Switch the camera on. The camera frames will be sent to TextCapture for processing.
          * Additionally the preview will appear on the screen. The camera is started asynchronously,
          * and you may notice a small delay before the preview appears.
          */
-        dataCaptureManager!!.camera!!.addListener(this)
+        if (enableListener) {
+            dataCaptureManager!!.camera!!.addListener(this)
+        }
         dataCaptureManager!!.camera!!.switchToDesiredState(FrameSourceState.ON)
         dataCaptureManager!!.idCapture!!.isEnabled = true
+        dataCaptureManager!!.idCapture!!.addListener(this)
 
         /*
          * Reset the overlay and instruction text
@@ -132,10 +124,11 @@ class IdCaptureActivity : AppCompatActivity(), IdCaptureListener, FrameSourceLis
         /*
          * Switch the camera off to stop streaming frames. The camera is stopped asynchronously.
          */
-        dataCaptureManager!!.camera!!.removeListener(this)
+        if (enableListener) {
+            dataCaptureManager!!.camera!!.removeListener(this)
+        }
         dataCaptureManager!!.camera!!.switchToDesiredState(FrameSourceState.OFF)
         dataCaptureManager!!.idCapture!!.removeListener(this)
-        dataCaptureView!!.removeOverlay(overlay!!)
     }
     
     override fun onDestroy() {
